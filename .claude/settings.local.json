@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "PowerShell(flutter analyze lib/game/ursa_game.dart)",
+      "Read",
+      "Edit",
+      "Glob",
+      "Grep",
+      "PowerShell(flutter *)",
+      "PowerShell(dart *)",
+      "PowerShell(git *)",
+      "PowerShell(Get-ChildItem *)",
+      "Bash(flutter *)",
+      "Bash(dart *)",
+      "Bash(git *)",
+      "Bash(curl *)",
+      "Bash(ls *)"
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "bipedSpeed": {
+    "type": "number",
+    "value": 240,
+    "min": 160,
+    "max": 340,
+    "step": 10,
+    "name": "Kecepatan Berdiri",
+    "description": "Kecepatan gerak URSA saat bipedal",
+    "group": "Gerak",
+    "index": 1
+  },
+  "quadSpeed": {
+    "type": "number",
+    "value": 410,
+    "min": 280,
+    "max": 540,
+    "step": 10,
+    "name": "Kecepatan Merangkak",
+    "description": "Kecepatan sprint URSA saat quadrupedal",
+    "group": "Gerak",
+    "index": 2
+  },
+  "gravity": {
+    "type": "number",
+    "value": 1650,
+    "min": 1100,
+    "max": 2200,
+    "step": 50,
+    "name": "Gravitasi",
+    "description": "Berat lompatan dan jatuh URSA",
+    "group": "Gerak",
+    "index": 3
+  },
+  "cameraLookAhead": {
+    "type": "number",
+    "value": 105,
+    "min": 0,
+    "max": 220,
+    "step": 5,
+    "name": "Pandangan Kamera",
+    "description": "Seberapa jauh kamera melihat ke arah lari",
+    "group": "Kamera",
+    "index": 1
+  },
+  "effectsIntensity": {
+    "type": "number",
+    "value": 1,
+    "min": 0,
+    "max": 2,
+    "step": 0.1,
+    "name": "Intensitas Efek",
+    "description": "Jumlah jejak, debu, dan guncangan visual",
+    "group": "Visual",
+    "index": 1
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "default": { "columns": 5, "rows": 4, "offsetX": 56, "offsetY": 56, "frameWidth": 320, "frameHeight": 320, "gapX": 64, "gapY": 64 },
+  "groups": {
+    "WORLD_PROPS": { "columns": 6, "rows": 3 },
+    "FOOD_ATLAS": { "columns": 4, "rows": 2, "offsetX": 56, "offsetY": 56, "frameWidth": 320, "frameHeight": 320, "gapX": 64, "gapY": 64 },
+    "UI_ICONS": { "columns": 6, "rows": 3 },
+    "YEAR2_PROPS_A": { "columns": 6, "rows": 3 },
+    "YEAR2_PROPS_B": { "columns": 6, "rows": 3 },
+    "YEAR2_FOOD": { "columns": 5, "rows": 2, "offsetX": 56, "offsetY": 56, "frameWidth": 320, "frameHeight": 320, "gapX": 64, "gapY": 64 },
+    "TILES_SPRING": { "columns": 4, "rows": 3 },
+    "TILES_RIVER": { "columns": 4, "rows": 3 },
+    "TILES_WOOD": { "columns": 4, "rows": 3 },
+    "TILES_CLIFF": { "columns": 4, "rows": 3 },
+    "TILES_HONEY": { "columns": 4, "rows": 3 },
+    "TILES_AUTUMN": { "columns": 4, "rows": 3 },
+    "TILES_ICE": { "columns": 4, "rows": 3 },
+    "TILES_THERMAL": { "columns": 4, "rows": 3 },
+    "TILES_REDWOOD": { "columns": 4, "rows": 3 },
+    "TILES_GLASS_ICE": { "columns": 4, "rows": 3 },
+    "TILES_ECHO": { "columns": 4, "rows": 3 },
+    "TILES_ASH": { "columns": 4, "rows": 3 },
+    "TILES_DELTA": { "columns": 4, "rows": 3 },
+    "TILES_MOON": { "columns": 4, "rows": 3 }
+  }
+}

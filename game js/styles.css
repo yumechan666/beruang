@@ -1,0 +1,769 @@
+/* Template contract — keep this sizing block intact when re-theming.
+   The game runs in an iframe inside iOS/Android WebViews, where viewport
+   units (100vh/100dvh/100vw) go stale after the view scrolls or hides and
+   leave blank bands; this container-percentage chain is what sizes the game
+   reliably. Restyle colors, fonts, and visuals freely, but do not replace
+   these sizing/overflow rules or size any root container in viewport units. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Low-specificity flex/grid shrink floor: intrinsic content must not widen or
+   deepen a layout track beyond the handheld frame. Component minimums win. */
+:where(#app *) {
+  min-width: 0;
+  min-height: 0;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #182219;
+  color: #fff4d6;
+  font-family: "Nunito Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  /* Text strokes are centered on glyph contours. Paint the fill last so an
+     outline stays outside instead of cutting into counters and thin strokes. */
+  paint-order: stroke fill;
+  /* Size container: children size type/spacing in cqw/cqh/cqmin units,
+     which track the actual game frame (viewport units are banned above). */
+  container-type: size;
+}
+
+/* Do not inherit the HTML text safeguard into SVG artwork, whose fill/stroke
+   layering may intentionally use the SVG default. */
+#app svg {
+  paint-order: normal;
+}
+
+canvas,
+.game-surface {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Template contract — fit-mechanics primitives. Layout is top-down: the
+   frame is the budget and content adapts to its box, so overflow is
+   impossible by construction. These classes carry ONLY fit mechanics —
+   shrink/wrap behavior, min-width: 0 (flex children otherwise refuse to
+   shrink below their text), truncation, container-query type scaling, 44px
+   touch minimums, and gaps. They are deliberately unstyled: their look
+   (colors, backgrounds, radii, borders, fonts) is yours to build from the
+   game's art direction. Custom controls and layouts are welcome too — keep
+   the same fit rules. Do not remove the sizing/min/max/overflow/gap rules. */
+
+/* Horizontal band of HUD stats. Wraps as a final containment fallback;
+   compact handheld frames can be short as well as narrow, so keep the
+   primary row iconic and hide/truncate secondary labels before relying on a
+   second line. Grid-track friendly: use as the `auto` rows of a
+   `grid-template-rows: auto minmax(0, 1fr) auto` page layout. */
+.hud-row {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  gap: clamp(6px, 2cqw, 14px);
+  padding: clamp(6px, 2cqmin, 12px);
+}
+
+/* Compact HUD stat (score, timer, lives). Truncates rather than breaking
+   layout as a last resort; add `flex-shrink: 0` to a badge that must never
+   truncate (score, timer) so decorative neighbors compress first. */
+.badge {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-inline: 0.4em;
+  font-size: clamp(12px, 3.5cqw, 18px);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Discrete status pips (hearts, lives, stars, ammo). Pips are fixed-size
+   flex items, NEVER repeated glyphs inside a truncating text run: glyphs
+   like ♥ resolve through different fallback fonts per browser, take
+   different widths, and get clipped by ellipsis in Firefox/Safari but not
+   Chrome. The fixed box is what makes a pip safe — its content can be
+   whatever fits the game: a glyph centered in the box (the box neutralizes
+   glyph-width differences), a generated sprite via `background: url(...)
+   center/contain no-repeat`, or an SVG/mask shape. */
+.pip-row {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(2px, 0.8cqw, 6px);
+}
+
+.pip {
+  flex: 0 0 auto;
+  width: clamp(12px, 4cqw, 20px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+/* Touch-control band. */
+.controls-row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  gap: clamp(12px, 3cqw, 20px);
+  padding: clamp(8px, 2cqmin, 14px);
+}
+
+/* Finger-sized control. 44px is the minimum touch target; the gap above is
+   the minimum separation. flex: 0 1 auto lets a crowded row shrink buttons
+   down to (but never below) the minimum. overflow keeps legacy raw-text
+   buttons contained; wrap text in .control-label for a visible ellipsis. */
+.control-btn {
+  box-sizing: border-box;
+  flex: 0 1 auto;
+  min-width: 44px;
+  max-width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0.5em 1em;
+  font-size: clamp(13px, 3.5cqw, 18px);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.control-label {
+  min-width: 0;
+  max-width: 100%;
+  padding-inline: 0.4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ursa-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  background: #203120;
+}
+
+.hud-menu-btn {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(234, 204, 127, 0.26);
+  border-radius: 12px;
+  background: rgba(10, 15, 10, 0.32);
+  color: #f5d995;
+  font: 800 clamp(16px, 4cqw, 21px) / 1 "Nunito Sans", sans-serif;
+}
+
+.ursa-hud {
+  z-index: 5;
+  flex-wrap: nowrap;
+  padding: clamp(5px, 1.6cqmin, 10px);
+  color: #fff3d1;
+  background: linear-gradient(180deg, rgba(30, 28, 19, 0.96), rgba(46, 45, 28, 0.91));
+  border-bottom: 2px solid rgba(224, 190, 111, 0.35);
+  box-shadow: 0 3px 0 rgba(17, 21, 14, 0.45);
+}
+
+.hud-cluster {
+  display: flex;
+  align-items: center;
+  gap: clamp(5px, 1.4cqw, 10px);
+}
+
+.hud-center {
+  margin-inline-start: auto;
+}
+
+.stance-icon {
+  flex: 0 0 auto;
+  width: clamp(34px, 9cqmin, 48px);
+  height: clamp(34px, 9cqmin, 48px);
+}
+
+.hud-copy {
+  display: grid;
+  max-width: min(34cqw, 180px);
+  line-height: 1.05;
+}
+
+.area-label {
+  padding-inline: 0.2em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: "Alegreya", Georgia, serif;
+  font-size: clamp(12px, 3.3cqw, 17px);
+  letter-spacing: 0.025em;
+}
+
+.stance-label,
+.food-badge,
+.claw-badge,
+.chance-label,
+.meter-label {
+  font-size: clamp(10px, 2.6cqw, 13px);
+  font-weight: 800;
+  color: #dfc98f;
+  white-space: nowrap;
+}
+
+.chance-label {
+  flex-shrink: 0;
+  color: #f4d078;
+}
+
+.food-badge,
+.claw-badge {
+  padding: 0.35em 0.5em;
+  border: 1px solid rgba(234, 204, 127, 0.24);
+  border-radius: 999px;
+  background: rgba(12, 16, 11, 0.3);
+}
+
+.paw-pip {
+  border-radius: 48% 48% 55% 55%;
+  background: #d9a950;
+  box-shadow: inset 0 -2px 0 rgba(79, 46, 22, 0.34);
+  transform: rotate(-8deg);
+}
+
+.paw-pip.empty {
+  opacity: 0.22;
+  background: #b5a981;
+}
+
+.meter-wrap {
+  width: clamp(70px, 19cqw, 126px);
+  display: grid;
+  gap: 2px;
+}
+
+.meter-track {
+  width: 100%;
+  height: clamp(5px, 1.7cqmin, 9px);
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(4, 8, 9, 0.55);
+  border: 1px solid rgba(232, 224, 190, 0.25);
+}
+
+.meter-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6cc8ce, #f0c15e);
+  transition: width 180ms linear;
+}
+
+.playfield {
+  position: relative;
+  overflow: hidden;
+  background: #5f7752;
+}
+
+.game-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.chapter-toast {
+  position: absolute;
+  z-index: 6;
+  top: clamp(8px, 2cqh, 18px);
+  left: 50%;
+  width: max-content;
+  max-width: min(86%, 460px);
+  padding: 0.55em 0.9em;
+  transform: translateX(-50%) translateY(-8px);
+  border: 1px solid rgba(251, 227, 167, 0.4);
+  border-radius: 999px;
+  background: rgba(25, 27, 18, 0.84);
+  color: #fff1c9;
+  font-size: clamp(12px, 3.2cqw, 16px);
+  font-weight: 800;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.chapter-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.game-overlay {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 5cqmin, 34px);
+  background: rgba(8, 14, 18, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.overlay-panel {
+  width: min(88%, 390px);
+  display: grid;
+  justify-items: center;
+  gap: 0.7em;
+  padding: clamp(18px, 5cqmin, 32px);
+  border: 2px solid rgba(239, 211, 145, 0.5);
+  border-radius: 22px 18px 24px 16px;
+  background: linear-gradient(155deg, #38442e, #202b26);
+  box-shadow: 0 12px 0 rgba(10, 13, 10, 0.34);
+  text-align: center;
+}
+
+.overlay-kicker {
+  margin: 0;
+  color: #d9bd76;
+  font-size: clamp(10px, 2.7cqw, 13px);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.overlay-panel h2 {
+  margin: 0;
+  font-family: "Alegreya", Georgia, serif;
+  font-size: min(10cqw, 8cqh, 42px);
+  line-height: 0.96;
+}
+
+.overlay-result {
+  margin: 0;
+  color: #e3d6ad;
+  font-size: clamp(12px, 3.4cqw, 16px);
+}
+
+.ursa-controls {
+  position: relative;
+  z-index: 5;
+  justify-content: space-between;
+  padding: clamp(7px, 1.8cqmin, 12px);
+  background: linear-gradient(180deg, #303626, #20271f);
+  border-top: 2px solid rgba(236, 208, 140, 0.27);
+}
+
+.move-controls,
+.action-controls {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 3cqw, 18px);
+}
+
+.ursa-controls .control-btn,
+.overlay-button {
+  border: 1px solid rgba(246, 221, 158, 0.34);
+  border-radius: 16px 12px 18px 13px;
+  background: linear-gradient(180deg, #5d6344, #3a402f);
+  color: #fff0c7;
+  box-shadow: 0 4px 0 #171c17, inset 0 1px 0 rgba(255, 255, 255, 0.13);
+  font-weight: 800;
+}
+
+.ursa-controls .control-btn:active,
+.ursa-controls .control-btn[aria-pressed="true"],
+.overlay-button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #171c17;
+}
+
+.move-btn {
+  width: clamp(48px, 13cqw, 68px);
+  padding-inline: 0.5em;
+}
+
+.shift-btn {
+  background: linear-gradient(180deg, #a46a39, #6d4026) !important;
+  border-color: rgba(255, 224, 158, 0.58) !important;
+}
+
+.action-btn {
+  max-width: clamp(64px, 18cqw, 108px);
+}
+
+.start-menu {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: clamp(8px, 2.5cqmin, 20px);
+  isolation: isolate;
+}
+
+.menu-backdrop {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  transform: scale(1.04);
+  transition: background-image 180ms ease;
+}
+
+.start-menu::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(9, 15, 12, 0.18), rgba(9, 14, 12, 0.78));
+}
+
+.menu-panel {
+  width: min(96%, 590px);
+  height: min(96%, 700px);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: clamp(7px, 1.7cqmin, 12px);
+  padding: clamp(10px, 2.5cqmin, 18px);
+  overflow: hidden;
+  border: 2px solid rgba(241, 213, 145, 0.48);
+  border-radius: 24px 18px 27px 16px;
+  background: linear-gradient(160deg, rgba(51, 62, 43, 0.96), rgba(24, 34, 29, 0.97));
+  box-shadow: 0 12px 0 rgba(8, 12, 10, 0.35);
+}
+
+.menu-brand {
+  display: grid;
+  justify-items: center;
+  line-height: 0.9;
+}
+
+.menu-brand p,
+.menu-brand span {
+  margin: 0;
+  color: #d7c187;
+  font-size: clamp(9px, 2.4cqw, 12px);
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.menu-brand h1 {
+  margin: 0;
+  font-family: "Alegreya", Georgia, serif;
+  font-size: min(14cqw, 10cqh, 64px);
+  line-height: 0.85;
+  color: #fff0c2;
+  text-shadow: 3px 3px 0 #513a22;
+}
+
+.menu-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(8px, 2cqw, 14px);
+}
+
+.menu-tab {
+  min-height: 44px;
+  border: 1px solid rgba(242, 216, 150, 0.28);
+  border-radius: 12px;
+  background: rgba(11, 17, 13, 0.34);
+  color: #c9b984;
+  font: 800 clamp(12px, 3.2cqw, 16px) / 1 "Nunito Sans", sans-serif;
+}
+
+.menu-tab.active {
+  color: #fff0c2;
+  background: #79502f;
+  border-color: rgba(255, 222, 151, 0.62);
+}
+
+.menu-pane {
+  overflow: hidden;
+}
+
+.level-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(44px, 1fr));
+  grid-template-rows: repeat(4, minmax(44px, 1fr));
+  gap: clamp(4px, 1.2cqmin, 8px);
+}
+
+.level-choice {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  align-content: end;
+  justify-items: start;
+  overflow: hidden;
+  padding: 0.35em;
+  border: 2px solid rgba(245, 222, 164, 0.2);
+  border-radius: 10px;
+  background-position: center;
+  background-size: cover;
+  color: #fff3d1;
+  text-align: start;
+}
+
+.level-choice strong {
+  font-family: "Alegreya", Georgia, serif;
+  font-size: clamp(15px, 4.2cqw, 22px);
+  line-height: 0.8;
+}
+
+.level-choice span {
+  width: 100%;
+  overflow: hidden;
+  color: #f0ddae;
+  font-size: clamp(8px, 1.9cqw, 10px);
+  font-weight: 800;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.level-choice:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.72) brightness(0.58);
+}
+
+.level-lock {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 14, 12, 0.28);
+  color: #fff0c2;
+  font-size: clamp(16px, 5cqw, 26px);
+  font-style: normal;
+  text-shadow: 0 2px 4px #111;
+}
+
+.level-choice.locked .level-lock {
+  display: flex;
+}
+
+.level-choice.selected {
+  border-color: #ffd978;
+  box-shadow: inset 0 0 0 2px rgba(255, 217, 120, 0.34);
+  transform: translateY(-2px);
+}
+
+.skin-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(7px, 2cqw, 12px);
+}
+
+.skin-choice {
+  min-height: 44px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto auto;
+  justify-items: center;
+  overflow: hidden;
+  padding: clamp(5px, 1.5cqmin, 10px);
+  border: 2px solid color-mix(in srgb, var(--skin-swatch), #f1d48e 25%);
+  border-radius: 17px 12px 19px 13px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--skin-swatch), #fff 8%), rgba(17, 22, 18, 0.72));
+  color: #fff0c2;
+  text-align: center;
+}
+
+.skin-choice canvas {
+  width: 100%;
+  height: 100%;
+  max-height: 190px;
+}
+
+.skin-choice strong {
+  font-family: "Alegreya", Georgia, serif;
+  font-size: clamp(14px, 3.8cqw, 20px);
+}
+
+.skin-choice span,
+.skin-choice i {
+  max-width: 100%;
+  overflow: hidden;
+  color: #d8c99e;
+  font-size: clamp(8px, 2.1cqw, 11px);
+  font-style: normal;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.skin-choice .skin-status {
+  color: #f0c96d;
+  font-weight: 900;
+}
+
+.skin-choice.locked-skin {
+  cursor: pointer;
+}
+
+.skin-choice i {
+  color: #f0c96d;
+}
+
+.skin-choice.selected {
+  border-color: #ffdf87;
+  box-shadow: inset 0 0 0 2px rgba(255, 223, 135, 0.3);
+  transform: translateY(-2px);
+}
+
+.menu-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(8px, 2cqw, 14px);
+}
+
+.menu-selection {
+  display: grid;
+  overflow: hidden;
+  line-height: 1.05;
+}
+
+.menu-selection strong,
+.menu-selection span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.menu-selection strong {
+  font-family: "Alegreya", Georgia, serif;
+  font-size: clamp(13px, 3.4cqw, 18px);
+}
+
+.menu-selection span {
+  color: #d8c492;
+  font-size: clamp(10px, 2.6cqw, 13px);
+  font-weight: 800;
+}
+
+.menu-start {
+  min-width: clamp(88px, 24cqw, 132px);
+  border: 1px solid #e8bf62;
+  border-radius: 15px;
+  background: linear-gradient(180deg, #af7139, #714327);
+  color: #fff2ce;
+  box-shadow: 0 4px 0 #241c14;
+  font-weight: 800;
+}
+
+@container (max-width: 430px) {
+  .stance-label,
+  .claw-badge {
+    display: none;
+  }
+
+  .ursa-controls .control-btn {
+    padding-inline: 0.45em;
+  }
+
+  .hud-menu-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@container (max-height: 520px) {
+  .stance-label,
+  .meter-wrap {
+    display: none !important;
+  }
+
+  .ursa-hud,
+  .ursa-controls {
+    padding-block: 4px;
+  }
+
+
+  .menu-brand span,
+  .menu-brand p,
+  .skin-choice span {
+    display: none;
+  }
+
+  .menu-panel {
+    height: 98%;
+    padding-block: 7px;
+  }
+
+  .skin-choice canvas {
+    max-height: 110px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chapter-toast,
+  .meter-fill {
+    transition: none;
+  }
+}
